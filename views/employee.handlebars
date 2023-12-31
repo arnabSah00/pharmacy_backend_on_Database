@@ -1,0 +1,227 @@
+<div id="view" class="container mt-5 mb-5">
+    <h2>Employee Details</h2>
+    <table id="viewT" class="table  table-striped table-bordered ">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Employee</th>
+          <th scope="col">Position</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Mail</th>
+          <th scope="col">Salary</th>
+          <th scope="col">Account Number</th>
+          <th scope="col">IFSC</th>
+        </tr>
+      </thead>
+      <tbody id="dataT">
+
+      </tbody>
+  
+      <tfoot>
+        <tr>
+          <th>ID</th>
+          <th>Employee</th>
+          <th>Position</th>
+          <th>Phone</th>
+          <th>Mail</th>
+          <th>Salary</th>
+          <th>Account Number</th>
+          <th>IFSC</th>
+        </tr>
+      </tfoot>
+    </table>
+
+    <br>
+    <button id="submitB" type="submit" value="submit" class="btn btn-primary" style="display: none;">Submit</button>
+    <button id="addButton" class="btn btn-primary" onclick="toggleInputCell()">Add Row</button>
+    <button id="updateB" class="btn btn-primary" >Update Row</button>
+    
+  </div>
+{{!-- style --}}
+<style>
+
+</style>
+
+
+{{!-- script --}}
+<script>
+  //make table
+  new DataTable('#viewT');
+
+
+  //for enter input cell
+  var added=false;
+  function addInputCell() {
+    $('#addButton').text("Delete Row");
+    $('#submitB').show();
+    var table = document.getElementById("viewT");
+    var row = table.insertRow(-1); // Append row at the end
+
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    var cell3 = row.insertCell(2);
+    var cell4 = row.insertCell(3);
+    var cell5 = row.insertCell(4);
+    var cell6 = row.insertCell(5);
+    var cell7 = row.insertCell(6);
+    var cell8 = row.insertCell(7);
+
+    var input1 = document.createElement("input");
+    var input2 = document.createElement("input");
+    var input3 = document.createElement("input");
+    var input4 = document.createElement("input");
+    var input5 = document.createElement("input");
+    var input6 = document.createElement("input");
+    var input7 = document.createElement("input");
+    var input8 = document.createElement("input");
+
+
+    input1.type = "number";
+    input2.type = "text";
+    input3.type = "text";
+    input4.type = "number";
+    input5.type = "text";
+    input6.type = "number";
+    input7.type = "number";
+    input8.type = "text";
+
+    input1.style.width = '35px'; // Set the new width here
+    input2.style.width = '150px';
+    input3.style.width = '100px';
+    input6.style.width = '120px';
+
+    var rowCount = $('#viewT').DataTable().rows().count();
+    input1.value=rowCount+1;
+    input1.readOnly = true; // Make the first input unchangeable
+
+    cell1.appendChild(input1);
+    cell2.appendChild(input2);
+    cell3.appendChild(input3);
+    cell4.appendChild(input4);
+    cell5.appendChild(input5);
+    cell6.appendChild(input6);
+    cell7.appendChild(input7);
+    cell8.appendChild(input8);
+
+    added = true;
+  }
+  //for delete input cell
+  function deleteInputCell() {
+    $('#addButton').text("Add Row");
+    $('#submitB').hide();
+    var table = document.getElementById("viewT");
+    table.deleteRow(-1); // Delete the last row  
+    added = false;
+  }
+  //add button to control input cell
+  function toggleInputCell() {
+    if (!added) {
+      addInputCell();
+    } 
+    else {
+      deleteInputCell();
+    }
+  }
+
+
+  // for show already saved data from database throw ajax
+  let tableData;
+  function showTable() {
+
+    $.ajax({
+        url: '/data', // Update with your server endpoint
+        method: 'GET',
+        success: function(response) {
+          var data = response; // response is an array of objects(json file)
+          tableData = data;
+          var table = $('#viewT').DataTable();
+          table.clear();
+          data.forEach(function(item) {
+            table.row.add([
+              item.EID,
+              item.name,
+              item.post_in_company,
+              item.phone_no,
+              item.email,
+              item.salary,
+              item.account_number,
+              item.IFSC_code
+            ]);
+          });
+          table.draw();
+        },
+        error: function(error) {
+          console.error('Error occurred while fetching data: ', error);
+        }
+    });
+  }
+
+
+  //after page start.... post data....for set data call function
+  $(document).ready(function(){
+
+    showTable();
+
+    $('body').on('click', '#submitB', function () {
+      var id = $('#viewT tr:last td:nth-child(1) input').val();
+      var employee = $('#viewT tr:last td:nth-child(2) input').val();
+      var position = $('#viewT tr:last td:nth-child(3) input').val();
+      var phone = $('#viewT tr:last td:nth-child(4) input').val();
+      var mail = $('#viewT tr:last td:nth-child(5) input').val();
+      var salary = $('#viewT tr:last td:nth-child(6) input').val();
+      var account = $('#viewT tr:last td:nth-child(7) input').val();
+      var ifsc = $('#viewT tr:last td:nth-child(8) input').val();
+
+      let Employee_phone_found = false;
+      let Employee_bank_acc = false;
+      for (let i = 0; i < tableData.length; i++) {
+        if (tableData[i].phone_no == phone) {
+          Employee_phone_found = true;
+          break;
+        }
+        if (tableData[i].account_number == account) {
+          Employee_bank_acc = true;
+          break;
+        }
+      }
+
+
+      if(Employee_phone_found){
+        alert('Phone Number Exists!');
+      }
+      else if(Employee_bank_acc){
+        alert('Account Number Exist!');
+      }
+      else if(employee===''||employee===undefined ||employee===null){
+        alert('Enter Employee Name');
+      }
+      else if(account===''||account===undefined ||account===null){
+        alert('Enter Account Number!')
+      }
+      else if(ifsc===undefined || ifsc=='' || ifsc==null){
+        alert('Enter IFSC code!');
+      }
+      else{
+      $.ajax({
+          type: "POST",
+          url: "/submit", // Your server endpoint for submitting data
+          data:{ EID: id, name:employee, post_in_company:position, phone_no:phone, email:mail, salary:salary,account_number:account,IFSC_code:ifsc}, 
+          success: function (response) {
+              console.log(response);
+              if(response=='Data inserted successfully!'){
+                showTable();
+                deleteInputCell();
+              }
+              alert(response);
+          },
+          error: function (error) {
+              console.error(error);
+              alert("Error occurred while submitting data.");
+          }
+      });
+      }
+    });
+  });
+
+
+</script>
